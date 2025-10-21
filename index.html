@@ -1,0 +1,3098 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบขออนุญาตใช้งานรถของบริษัทฯ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 70%);
+            border-radius: 50%;
+            top: -200px;
+            right: -200px;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 70%);
+            border-radius: 50%;
+            bottom: -150px;
+            left: -150px;
+            animation: float 20s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        .container {
+            position: relative;
+            width: 900px;
+            min-height: 600px;
+            background: #fff;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            z-index: 1;
+            animation: containerAppear 0.8s ease-out;
+        }
+
+        @keyframes containerAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .page {
+            display: none;
+            min-height: 600px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .login-page {
+            position: relative;
+            height: 600px;
+        }
+
+        .login-container {
+            position: absolute;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            z-index: 1;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-box p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            letter-spacing: -0.2px;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            background: #fff;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        .btn {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(116, 148, 236, 0.4);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #fff;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(116, 148, 236, 0.5);
+        }
+
+        .user-link {
+            margin-top: 20px;
+            color: #667eea;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .user-link:hover {
+            color: #764ba2;
+        }
+
+        .login-toggle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .login-toggle::before {
+            content: '';
+            position: absolute;
+            left: -250%;
+            width: 300%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 150px;
+            z-index: 2;
+            transition: 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 60px rgba(102, 126, 234, 0.5);
+        }
+
+        .login-page.slide-login .login-toggle::before {
+            left: 50%;
+        }
+
+        .login-panel {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            z-index: 2;
+            text-align: center;
+            left: 0;
+            transition: 0.6s ease-in-out;
+            transition-delay: 1.2s;
+        }
+
+        .login-page.slide-login .login-panel {
+            left: -50%;
+            transition-delay: 0.6s;
+        }
+
+        .login-success-panel {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            z-index: 2;
+            text-align: center;
+            right: -50%;
+            transition: 0.6s ease-in-out;
+            transition-delay: 0.6s;
+        }
+
+        .login-page.slide-login .login-success-panel {
+            right: 0;
+            transition-delay: 1.2s;
+        }
+
+        .login-panel h1, .login-success-panel h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-panel p, .login-success-panel p {
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .admin-page {
+            min-height: 100vh;
+            width: 100%;
+            padding: 50px 60px;
+            overflow-y: auto;
+            background: #f3f4f6;
+            animation: fadeIn 0.8s ease-out;
+            box-sizing: border-box;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .admin-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #333;
+            letter-spacing: -0.5px;
+        }
+
+        .admin-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-btn {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .dashboard-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .notification-badge {
+            position: relative;
+        }
+
+        .notification-icon {
+            font-size: 26px;
+            cursor: pointer;
+            color: #667eea;
+        }
+
+        .badge-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e74c3c;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .logout-btn {
+            padding: 10px 25px;
+            background: transparent;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 18px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(116, 148, 236, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 15px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .stat-card .number {
+            font-size: 40px;
+            font-weight: 800;
+        }
+
+        .requests-list {
+            background: #fff;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .requests-list h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .request-item {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .request-item:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .request-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .request-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .request-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .detail-item {
+            color: #666;
+        }
+
+        .detail-item strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .approve-btn, .reject-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .approve-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .approve-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .reject-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .dashboard-page {
+            min-height: 100vh;
+            width: 100%;
+            padding: 50px 60px;
+            overflow-y: auto;
+            background: #f3f4f6;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .date-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 12px 30px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .dash-card {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dash-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .dash-icon {
+            font-size: 48px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .dash-content h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .dash-number {
+            font-size: 36px;
+            font-weight: 800;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.8s ease;
+        }
+
+        .chart-container h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .chart-container canvas {
+            max-height: 300px;
+        }
+
+        /* Check Status Page - Full Screen */
+        .check-status-page {
+            min-height: 100vh;
+            width: 100%;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: fadeIn 0.6s ease-out;
+            overflow-y: auto;
+        }
+
+        .check-status-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .status-check-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-check-header h1 {
+            font-size: 42px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-check-header p {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 18px;
+        }
+
+        .status-search-panel {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 40px;
+            animation: slideUp 0.6s ease-out 0.2s both;
+        }
+
+        .search-name-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-name-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+        }
+
+        #statusSearchInput {
+            width: 100%;
+            padding: 20px 20px 20px 60px;
+            border: 3px solid #e9ecef;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        #statusSearchInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 6px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .status-search-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            margin-bottom: 15px;
+        }
+
+        .status-search-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .back-to-home-btn {
+            width: 100%;
+            padding: 18px;
+            background: transparent;
+            border: 3px solid white;
+            border-radius: 15px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-home-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .status-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .status-card {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            border-left: 6px solid #667eea;
+            animation: slideInUp 0.5s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .status-card.status-approved {
+            border-left-color: #28a745;
+        }
+
+        .status-card.status-rejected {
+            border-left-color: #dc3545;
+        }
+
+        .status-card.status-pending {
+            border-left-color: #ffc107;
+        }
+
+        .status-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .status-card-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: #333;
+            line-height: 1.2;
+        }
+
+        .status-badge-large {
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status-card-details {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            font-size: 15px;
+            color: #666;
+        }
+
+        .status-card-detail {
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .status-card-detail strong {
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .status-card-detail span {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .status-card-purpose {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-card-purpose strong {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .status-card-purpose p {
+            color: #555;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .status-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-empty-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+
+        .status-empty-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #666;
+        }
+
+        /* History Page Styles */
+        .history-page {
+            min-height: 100vh;
+            width: 100%;
+            padding: 50px 60px;
+            overflow-y: auto;
+            background: #f3f4f6;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .history-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .search-section {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #999;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 15px 20px 15px 55px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .history-stats-mini {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .mini-stat {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .mini-number {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .mini-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 18px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+        }
+
+        .timeline-item {
+            position: relative;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            animation: slideInRight 0.5s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .timeline-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 30px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+            z-index: 1;
+        }
+
+        .timeline-item.status-approved::before {
+            border-color: #28a745;
+            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.2);
+        }
+
+        .timeline-item.status-rejected::before {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2);
+        }
+
+        .timeline-item.status-pending::before {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.2);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .timeline-title {
+            flex: 1;
+        }
+
+        .timeline-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .timeline-dept {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .timeline-status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .timeline-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .timeline-info-item {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .timeline-info-item strong {
+            color: #333;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .timeline-purpose {
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .timeline-purpose strong {
+            color: #333;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .timeline-purpose p {
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .timeline-timestamps {
+            display: flex;
+            gap: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+            flex-wrap: wrap;
+        }
+
+        .timestamp-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .timestamp-icon {
+            font-size: 16px;
+        }
+
+        .timestamp-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+
+        .no-results-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-results-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .no-results-hint {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .user-page {
+            position: relative;
+            height: 600px;
+        }
+
+        .form-box {
+            position: absolute;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            padding: 40px;
+            z-index: 1;
+            transition: 0.6s ease-in-out 1.2s;
+        }
+
+        .user-page.slide-active .form-box {
+            right: 50%;
+        }
+
+        .form-box.success-page {
+            visibility: hidden;
+            transition: 0.6s ease-in-out 1.2s, visibility 0s 1s;
+        }
+
+        .user-page.slide-active .form-box.success-page {
+            visibility: visible;
+        }
+
+        .form-content {
+            width: 100%;
+            max-height: 100%;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .form-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .form-content::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .success-content {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: successIconAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 10px 40px rgba(116, 148, 236, 0.4);
+        }
+
+        @keyframes successIconAppear {
+            0% {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2) rotate(10deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .success-icon svg {
+            width: 60px;
+            height: 60px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            animation: checkmark 0.8s ease-out 0.3s forwards;
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+        }
+
+        @keyframes checkmark {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .success-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        .success-text {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .back-btn {
+            width: 200px;
+            height: 50px;
+            background: transparent;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .back-btn:hover {
+            background: #667eea;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .toggle-box {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .toggle-box::before {
+            content: '';
+            position: absolute;
+            left: -250%;
+            width: 300%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 150px;
+            z-index: 2;
+            transition: 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .user-page.slide-active .toggle-box::before {
+            left: 50%;
+        }
+
+        .toggle-panel {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            z-index: 2;
+            text-align: center;
+            transition: 0.6s ease-in-out;
+        }
+
+        .toggle-panel.toggle-left {
+            left: 0;
+            transition-delay: 1.2s;
+        }
+
+        .user-page.slide-active .toggle-panel.toggle-left {
+            left: -50%;
+            transition-delay: 0.6s;
+        }
+
+        .toggle-panel.toggle-right {
+            right: -50%;
+            transition-delay: 0.6s;
+        }
+
+        .user-page.slide-active .toggle-panel.toggle-right {
+            right: 0;
+            transition-delay: 1.2s;
+        }
+
+        .toggle-panel h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-panel p {
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+
+        .admin-link-btn {
+            margin-top: 10px;
+            padding: 12px 30px;
+            background: transparent;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: block;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .admin-link-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* ========== MOBILE RESPONSIVE STYLES ========== */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                width: 100%;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            /* User Page Mobile */
+            .user-page {
+                height: auto;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .form-box {
+                position: relative;
+                width: 100%;
+                right: auto !important;
+                padding: 30px 20px;
+            }
+
+            .toggle-box {
+                display: none;
+            }
+
+            .toggle-panel {
+                display: none;
+            }
+
+            .row {
+                grid-template-columns: 1fr;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            /* Mobile Header for Forms */
+            .mobile-header {
+                display: block;
+                text-align: center;
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                margin: -30px -20px 30px -20px;
+                border-radius: 0 0 25px 25px;
+            }
+
+            .mobile-header h1 {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            .mobile-header p {
+                font-size: 14px;
+                opacity: 0.95;
+            }
+
+            .mobile-action-buttons {
+                display: flex;
+                gap: 10px;
+                margin-top: 20px;
+                padding: 0 20px;
+            }
+
+            .mobile-btn {
+                flex: 1;
+                padding: 12px;
+                border: 2px solid white;
+                background: transparent;
+                color: white;
+                border-radius: 10px;
+                font-weight: 600;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .mobile-btn:active {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            /* Login Page Mobile */
+            .login-page {
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .login-container {
+                position: relative;
+                width: 100%;
+                right: auto;
+                padding: 30px 20px;
+            }
+
+            .login-toggle {
+                display: none;
+            }
+
+            .login-panel,
+            .login-success-panel {
+                display: none;
+            }
+
+            /* Check Status Page Mobile */
+            .check-status-page {
+                padding: 20px 15px;
+            }
+
+            .status-check-header h1 {
+                font-size: 28px;
+            }
+
+            .status-check-header p {
+                font-size: 15px;
+            }
+
+            .status-search-panel {
+                padding: 25px 20px;
+            }
+
+            #statusSearchInput {
+                font-size: 16px;
+                padding: 16px 16px 16px 55px;
+            }
+
+            .status-results {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .status-card {
+                padding: 20px;
+            }
+
+            .status-card-name {
+                font-size: 18px;
+            }
+
+            .status-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .status-badge-large {
+                margin-top: 10px;
+            }
+
+            /* Admin Page Mobile */
+            .admin-page,
+            .dashboard-page,
+            .history-page {
+                padding: 20px 15px;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .admin-header h1 {
+                font-size: 24px;
+            }
+
+            .admin-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .dashboard-btn,
+            .logout-btn {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+
+            .stats-grid,
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .stat-card {
+                padding: 20px;
+            }
+
+            .stat-card .number {
+                font-size: 32px;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .chart-container {
+                padding: 20px;
+            }
+
+            .request-item {
+                padding: 15px;
+            }
+
+            .request-details {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .request-actions {
+                flex-direction: column;
+            }
+
+            .approve-btn,
+            .reject-btn {
+                width: 100%;
+            }
+
+            /* Timeline Mobile */
+            .timeline-container {
+                padding-left: 25px;
+            }
+
+            .timeline-container::before {
+                left: 10px;
+            }
+
+            .timeline-item::before {
+                left: -21px;
+                width: 12px;
+                height: 12px;
+            }
+
+            .timeline-info-grid {
+                grid-template-columns: 1fr;
+                padding: 12px;
+            }
+
+            /* Filter Options Mobile */
+            .filter-options {
+                flex-direction: column;
+            }
+
+            .filter-select {
+                min-width: 100%;
+            }
+
+            .date-filter {
+                gap: 10px;
+            }
+
+            .filter-btn {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+
+            /* History Stats Mobile */
+            .history-stats-mini {
+                flex-direction: column;
+            }
+
+            .mini-stat {
+                width: 100%;
+            }
+
+            /* Dash Cards Mobile */
+            .dash-card {
+                padding: 20px;
+            }
+
+            .dash-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 36px;
+            }
+
+            .dash-number {
+                font-size: 28px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .status-check-header h1 {
+                font-size: 24px;
+            }
+
+            .status-search-btn,
+            .back-to-home-btn {
+                font-size: 16px;
+                padding: 15px;
+            }
+
+            .admin-header h1 {
+                font-size: 20px;
+            }
+
+            .chart-container h3 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- User Form Page -->
+        <div class="page user-page active" id="userPage">
+            <div class="form-box form-page">
+                <div class="mobile-header" style="display: none;">
+                    <h1>🚗 แบบฟอร์มขออนุญาต</h1>
+                    <p>ใช้งานรถของบริษัทฯ</p>
+                    <div class="mobile-action-buttons">
+                        <button class="mobile-btn" onclick="showLoginPage()">🔐 Admin</button>
+                        <button class="mobile-btn" onclick="showCheckStatusPage()">🔍 สถานะ</button>
+                    </div>
+                </div>
+                <div class="form-content">
+                    <h2>📋 กรอกข้อมูล</h2>
+                    <p class="description">กรุณากรอกข้อมูลเพื่อขออนุญาตใช้งานรถของบริษัท</p>
+
+                    <form id="carRequestForm">
+                        <div class="row">
+                            <div class="form-group">
+                                <label>ชื่อ <span class="required">*</span></label>
+                                <input type="text" id="firstName" required placeholder="กรอกชื่อ">
+                            </div>
+                            <div class="form-group">
+                                <label>นามสกุล <span class="required">*</span></label>
+                                <input type="text" id="lastName" required placeholder="กรอกนามสกุล">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label>แผนก <span class="required">*</span></label>
+                                <select id="department" required>
+                                    <option value="">-- เลือกแผนก --</option>
+                                    <option value="ออฟฟิศ">ออฟฟิศ</option>
+                                    <option value="ห้องอาหาร&เครื่องดื่ม">ห้องอาหาร&เครื่องดื่ม</option>
+                                    <option value="ช่าง">ช่าง</option>
+                                    <option value="ห้องครัว">ห้องครัว</option>
+                                    <option value="ต้อนรับ">ต้อนรับ</option>
+                                    <option value="แม่บ้าน">แม่บ้าน</option>
+                                    <option value="แม่บ้าน(พม่า)">แม่บ้าน(พม่า)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>ตำแหน่ง <span class="required">*</span></label>
+                                <input type="text" id="position" required placeholder="กรอกตำแหน่ง">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>วันที่ <span class="required">*</span></label>
+                            <input type="date" id="date" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>ระบุชนิดรถที่ต้องการขออนุญาตใช้งาน <span class="required">*</span></label>
+                            <input type="text" id="carType" required placeholder="เช่น รถตู้, รถกระบะ, รถเก๋ง">
+                        </div>
+
+                        <div class="form-group">
+                            <label>หมายเลขทะเบียนรถ <span class="required">*</span></label>
+                            <input type="text" id="carPlate" required placeholder="เช่น กก-1234 กรุงเทพมหานคร">
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label>เลขไมล์ก่อนออกจากบริษัท <span class="required">*</span></label>
+                                <input type="number" id="milesBefore" required placeholder="0" min="0">
+                                <div class="hint">ระบุเป็นตัวเลขเท่านั้น</div>
+                            </div>
+                            <div class="form-group">
+                                <label>เลขไมล์หลังกลับเข้ามา <span class="required">*</span></label>
+                                <input type="number" id="milesAfter" required placeholder="0" min="0">
+                                <div class="hint">ระบุเป็นตัวเลขเท่านั้น</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label>ตั้งแต่เวลา <span class="required">*</span></label>
+                                <input type="time" id="timeFrom" required>
+                                <div class="hint">เช่น 08:30</div>
+                            </div>
+                            <div class="form-group">
+                                <label>ถึงเวลา <span class="required">*</span></label>
+                                <input type="time" id="timeTo" required>
+                                <div class="hint">เช่น 15:30</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>วัตถุประสงค์ <span class="required">*</span></label>
+                            <textarea id="purpose" required placeholder="กรอกวัตถุประสงค์ในการใช้รถ"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn">ส่งแบบฟอร์ม</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="form-box success-page">
+                <div class="success-content">
+                    <div class="success-icon">
+                        <svg viewBox="0 0 52 52">
+                            <polyline points="14 27 22 35 38 19"/>
+                        </svg>
+                    </div>
+                    <h2 class="success-title">ส่งแบบฟอร์มสำเร็จ!</h2>
+                    <p class="success-text">ส่งแบบฟอร์มขออนุญาตใช้งานเรียบร้อย<br>รอ Admin อนุมัติคำขอของคุณ</p>
+                    <button class="back-btn" onclick="resetUserForm()">กลับไปหน้าแรก</button>
+                </div>
+            </div>
+
+            <div class="toggle-box">
+                <div class="toggle-panel toggle-left">
+                    <h1>🚗 แบบฟอร์มขออนุญาต<br>ใช้งานรถของบริษัทฯ</h1>
+                    <p>แบบฟอร์มนี้ช่วยให้บริษัทควบคุมการใช้รถ<br>ตรวจสอบความรับผิดชอบ<br>และจัดการตารางการใช้รถได้อย่างเป็นระเบียบ</p>
+                    <button class="admin-link-btn" onclick="showLoginPage()">🔐 ฉันเป็น Admin</button>
+                    <button class="admin-link-btn" onclick="showCheckStatusPage()">🔍 ตรวจสอบสถานะ</button>
+                </div>
+
+                <div class="toggle-panel toggle-right">
+                    <h1>🎉 ขอบคุณที่ส่งข้อมูล!</h1>
+                    <p>แบบฟอร์มของคุณได้รับการบันทึกเรียบร้อยแล้ว<br>Admin จะดำเนินการตรวจสอบและอนุมัติ<br>โปรดรอการติดต่อกลับ</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Check Status Page -->
+        <div class="page check-status-page" id="checkStatusPage">
+            <div class="check-status-container">
+                <div class="status-check-header">
+                    <h1>🔍 ตรวจสอบสถานะคำขอ</h1>
+                    <p>กรอกชื่อของคุณเพื่อตรวจสอบสถานะคำขออนุญาตใช้รถ</p>
+                </div>
+
+                <div class="status-search-panel">
+                    <div class="search-name-box">
+                        <span class="search-name-icon">👤</span>
+                        <input type="text" id="statusSearchInput" placeholder="กรอกชื่อของคุณ...">
+                    </div>
+
+                    <button class="status-search-btn" onclick="searchUserStatus()">
+                        ค้นหาสถานะ
+                    </button>
+
+                    <button class="back-to-home-btn" onclick="showUserPage()">
+                        ← กลับหน้าแรก
+                    </button>
+                </div>
+
+                <div class="status-results" id="statusResults"></div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div class="page login-page" id="loginPage">
+            <div class="login-container">
+                <div class="login-box">
+                    <div class="mobile-header" style="display: none;">
+                        <h1>🔐 เข้าสู่ระบบ</h1>
+                        <p>Admin Panel</p>
+                    </div>
+                    <h1>🔐 เข้าสู่ระบบ Admin</h1>
+                    <p>กรุณาเข้าสู่ระบบเพื่อจัดการคำขออนุญาตใช้รถ</p>
+                    
+                    <div class="error-message" id="loginError">
+                        ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
+                    </div>
+
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label>ชื่อผู้ใช้</label>
+                            <input type="text" id="username" required placeholder="กรอกชื่อผู้ใช้">
+                        </div>
+                        <div class="form-group">
+                            <label>รหัสผ่าน</label>
+                            <input type="password" id="password" required placeholder="กรอกรหัสผ่าน">
+                        </div>
+                        <button type="submit" class="btn">เข้าสู่ระบบ</button>
+                    </form>
+
+                    <div class="user-link" onclick="showUserPage()">
+                        👤 กลับไปหน้าผู้ใช้งาน
+                    </div>
+                </div>
+            </div>
+
+            <div class="login-toggle">
+                <div class="login-panel">
+                    <h1>🎛️ ระบบจัดการ<br>อนุมัติการขอใช้งาน</h1>
+                    <p>สำหรับผู้ดูแลระบบในการอนุมัติ<br>และจัดการคำขอใช้รถของบริษัท<br>ตรวจสอบสถานะแบบเรียลไทม์</p>
+                </div>
+
+                <div class="login-success-panel">
+                    <div class="loading-spinner"></div>
+                    <h1>🎉 เข้าสู่ระบบสำเร็จ!</h1>
+                    <p>กำลังโหลดระบบ<br>โปรดรอสักครู่...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div class="page admin-page" id="adminPage">
+            <div class="admin-container">
+                <div class="admin-header">
+                    <h1>รายละเอียดการขออนุญาตใช้งาน</h1>
+                    <div class="admin-actions">
+                        <button class="dashboard-btn" onclick="showDashboardPage()">📊 Dashboard</button>
+                        <button class="dashboard-btn" onclick="showHistoryPage()">📜 ประวัติ</button>
+                        <div class="notification-badge">
+                            <span class="notification-icon">🔔</span>
+                            <span class="badge-count" id="notificationCount">0</span>
+                        </div>
+                        <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>คำขอทั้งหมด</h3>
+                        <div class="number" id="totalRequests">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>รอการอนุมัติ</h3>
+                        <div class="number" id="pendingRequests">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>อนุมัติแล้ว</h3>
+                        <div class="number" id="approvedRequests">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>ปฏิเสธ</h3>
+                        <div class="number" id="rejectedRequests">0</div>
+                    </div>
+                </div>
+
+                <div class="requests-list">
+                    <h2>📋 รายการคำขอที่รอการอนุมัติ</h2>
+                    <div id="requestsList">
+                        <div class="loading">กำลังโหลดข้อมูล...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div class="page dashboard-page" id="dashboardPage">
+            <div class="dashboard-container">
+                <div class="admin-header">
+                    <h1>📊 Dashboard - สรุปข้อมูล</h1>
+                    <div class="admin-actions">
+                        <button class="dashboard-btn" onclick="showAdminPage()">← กลับหน้าจัดการ</button>
+                        <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+                    </div>
+                </div>
+
+                <div class="date-filter">
+                    <button class="filter-btn active" data-days="7">7 วันที่ผ่านมา</button>
+                    <button class="filter-btn" data-days="30">30 วันที่ผ่านมา</button>
+                    <button class="filter-btn" data-days="90">90 วันที่ผ่านมา</button>
+                </div>
+
+                <div class="dashboard-stats">
+                    <div class="dash-card">
+                        <div class="dash-icon">📝</div>
+                        <div class="dash-content">
+                            <h3>คำขอทั้งหมด</h3>
+                            <div class="dash-number" id="dashTotalRequests">0</div>
+                        </div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-icon">✅</div>
+                        <div class="dash-content">
+                            <h3>อนุมัติแล้ว</h3>
+                            <div class="dash-number" id="dashApproved">0</div>
+                        </div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-icon">⏳</div>
+                        <div class="dash-content">
+                            <h3>รอการอนุมัติ</h3>
+                            <div class="dash-number" id="dashPending">0</div>
+                        </div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-icon">❌</div>
+                        <div class="dash-content">
+                            <h3>ปฏิเสธ</h3>
+                            <div class="dash-number" id="dashRejected">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>📊 สถานะคำขอ</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>📈 แนวโน้มคำขอรายวัน</h3>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>🏢 แผนกที่ขอใช้รถมากที่สุด</h3>
+                        <canvas id="departmentChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>🚗 รถที่ถูกใช้งานมากที่สุด</h3>
+                        <canvas id="carTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Page -->
+        <div class="page history-page" id="historyPage">
+            <div class="history-container">
+                <div class="admin-header">
+                    <h1>📜 ประวัติการขออนุญาตใช้งาน</h1>
+                    <div class="admin-actions">
+                        <button class="dashboard-btn" onclick="showAdminPage()">← กลับหน้าจัดการ</button>
+                        <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+                    </div>
+                </div>
+
+                <div class="search-section">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="ค้นหาชื่อ, แผนก, ทะเบียนรถ, วัตถุประสงค์...">
+                    </div>
+                    <div class="filter-options">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="all">สถานะทั้งหมด</option>
+                            <option value="Pending">รอการอนุมัติ</option>
+                            <option value="Approved">อนุมัติแล้ว</option>
+                            <option value="Rejected">ปฏิเสธ</option>
+                        </select>
+                        <select id="sortFilter" class="filter-select">
+                            <option value="newest">ล่าสุด → เก่าสุด</option>
+                            <option value="oldest">เก่าสุด → ล่าสุด</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="history-stats-mini">
+                    <div class="mini-stat">
+                        <span class="mini-number" id="historyTotal">0</span>
+                        <span class="mini-label">รายการทั้งหมด</span>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-number" id="historyFiltered">0</span>
+                        <span class="mini-label">ผลลัพธ์ที่แสดง</span>
+                    </div>
+                </div>
+
+                <div class="timeline-container" id="historyTimeline">
+                    <div class="loading">กำลังโหลดข้อมูล...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCS_JaO1JNmc5aNjd_j4h-O4aWY_AMSXko",
+            authDomain: "test1-4cf90.firebaseapp.com",
+            projectId: "test1-4cf90",
+            storageBucket: "test1-4cf90.firebasestorage.app",
+            messagingSenderId: "368626078801",
+            appId: "1:368626078801:web:a1e0a36a20c1f91d50d470",
+            measurementId: "G-SNVWK77KKG"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const ADMIN_USERNAME = '66209010008';
+        const ADMIN_PASSWORD = 'admin008';
+
+        let unsubscribe = null;
+        let dashboardUnsubscribe = null;
+        let historyUnsubscribe = null;
+        let allRequests = [];
+        let allHistoryRequests = [];
+        let currentFilter = 7;
+        let charts = {
+            status: null,
+            trend: null,
+            department: null,
+            carType: null
+        };
+        const today = new Date().toISOString().split('T')[0];
+
+        // Show mobile headers on mobile devices
+        function checkMobile() {
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('.mobile-header').forEach(el => {
+                    el.style.display = 'block';
+                });
+            } else {
+                document.querySelectorAll('.mobile-header').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkMobile();
+            window.addEventListener('resize', checkMobile);
+            
+            document.getElementById('date').setAttribute('value', today);
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const days = parseInt(this.getAttribute('data-days'));
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = days;
+                    filterData(days);
+                });
+            });
+
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const sortFilter = document.getElementById('sortFilter');
+            const statusSearchInput = document.getElementById('statusSearchInput');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', filterHistory);
+            }
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterHistory);
+            }
+            if (sortFilter) {
+                sortFilter.addEventListener('change', filterHistory);
+            }
+            if (statusSearchInput) {
+                statusSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchUserStatus();
+                    }
+                });
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                document.getElementById('loginPage').classList.add('slide-login');
+                setTimeout(() => {
+                    showAdminPage();
+                }, 2000);
+            } else {
+                const errorMsg = document.getElementById('loginError');
+                errorMsg.classList.add('show');
+                setTimeout(() => errorMsg.classList.remove('show'), 3000);
+            }
+        });
+
+        document.getElementById('carRequestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                department: document.getElementById('department').value,
+                position: document.getElementById('position').value,
+                date: document.getElementById('date').value,
+                carType: document.getElementById('carType').value,
+                carPlate: document.getElementById('carPlate').value,
+                milesBefore: parseInt(document.getElementById('milesBefore').value) || 0,
+                milesAfter: parseInt(document.getElementById('milesAfter').value) || 0,
+                timeFrom: document.getElementById('timeFrom').value,
+                timeTo: document.getElementById('timeTo').value,
+                purpose: document.getElementById('purpose').value,
+                status: 'Pending',
+                submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('carRequests').add(formData);
+                document.getElementById('userPage').classList.add('slide-active');
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message);
+            }
+        });
+
+        function showLoginPage() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('loginPage').classList.add('active');
+            document.getElementById('loginPage').classList.remove('slide-login');
+            document.getElementById('userPage').classList.remove('slide-active');
+            if (unsubscribe) unsubscribe();
+            if (dashboardUnsubscribe) dashboardUnsubscribe();
+            if (historyUnsubscribe) historyUnsubscribe();
+        }
+
+        function showAdminPage() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('adminPage').classList.add('active');
+            document.getElementById('loginPage').classList.remove('slide-login');
+            if (dashboardUnsubscribe) dashboardUnsubscribe();
+            if (historyUnsubscribe) historyUnsubscribe();
+            loadAdminData();
+        }
+
+        function showDashboardPage() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('dashboardPage').classList.add('active');
+            if (unsubscribe) unsubscribe();
+            if (historyUnsubscribe) historyUnsubscribe();
+            loadDashboardData();
+        }
+
+        function showHistoryPage() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('historyPage').classList.add('active');
+            if (unsubscribe) unsubscribe();
+            if (dashboardUnsubscribe) dashboardUnsubscribe();
+            loadHistoryData();
+        }
+
+        function showUserPage() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('userPage').classList.add('active');
+            document.getElementById('userPage').classList.remove('slide-active');
+            document.getElementById('loginPage').classList.remove('slide-login');
+            
+            const statusInput = document.getElementById('statusSearchInput');
+            const statusResults = document.getElementById('statusResults');
+            if (statusInput) statusInput.value = '';
+            if (statusResults) statusResults.innerHTML = '';
+            
+            if (unsubscribe) unsubscribe();
+            if (dashboardUnsubscribe) dashboardUnsubscribe();
+            if (historyUnsubscribe) historyUnsubscribe();
+        }
+
+        function showCheckStatusPage() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('checkStatusPage').classList.add('active');
+            document.getElementById('userPage').classList.remove('slide-active');
+        }
+
+        async function searchUserStatus() {
+            const searchTerm = document.getElementById('statusSearchInput').value.trim().toLowerCase();
+            const resultsContainer = document.getElementById('statusResults');
+
+            if (!searchTerm) {
+                resultsContainer.innerHTML = `
+                    <div class="status-empty">
+                        <div class="status-empty-icon">⚠️</div>
+                        <div class="status-empty-text">กรุณากรอกชื่อที่ต้องการค้นหา</div>
+                    </div>
+                `;
+                return;
+            }
+
+            resultsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white; font-size: 18px;">กำลังค้นหา...</div>';
+
+            try {
+                const snapshot = await db.collection('carRequests')
+                    .orderBy('submittedAt', 'desc')
+                    .get();
+
+                const results = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const fullName = `${data.firstName} ${data.lastName}`.toLowerCase();
+                    const firstName = data.firstName.toLowerCase();
+                    const lastName = data.lastName.toLowerCase();
+
+                    if (fullName.includes(searchTerm) || firstName.includes(searchTerm) || lastName.includes(searchTerm)) {
+                        results.push({ id: doc.id, ...data });
+                    }
+                });
+
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = `
+                        <div class="status-empty">
+                            <div class="status-empty-icon">😔</div>
+                            <div class="status-empty-text">ไม่พบข้อมูลคำขอสำหรับชื่อนี้</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                resultsContainer.innerHTML = results.map(req => {
+                    const statusClass = req.status.toLowerCase();
+                    const statusText = req.status === 'Pending' ? '⏳ รอการอนุมัติ' : 
+                                      req.status === 'Approved' ? '✅ อนุมัติแล้ว' : '❌ ปฏิเสธ';
+                    
+                    const submittedDate = req.submittedAt ? 
+                        req.submittedAt.toDate().toLocaleDateString('th-TH', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }) : 'ไม่ทราบวันที่';
+
+                    return `
+                        <div class="status-card status-${statusClass}">
+                            <div class="status-card-header">
+                                <div class="status-card-name">${req.firstName} ${req.lastName}</div>
+                                <span class="status-badge-large status-${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="status-card-details">
+                                <div class="status-card-detail">
+                                    <strong>📅 วันที่ใช้รถ</strong>
+                                    <span>${req.date}</span>
+                                </div>
+                                <div class="status-card-detail">
+                                    <strong>🕐 เวลา</strong>
+                                    <span>${req.timeFrom} - ${req.timeTo}</span>
+                                </div>
+                                <div class="status-card-detail">
+                                    <strong>🏢 แผนก</strong>
+                                    <span>${req.department}</span>
+                                </div>
+                                <div class="status-card-detail">
+                                    <strong>🚗 ชนิดรถ</strong>
+                                    <span>${req.carType}</span>
+                                </div>
+                                <div class="status-card-detail">
+                                    <strong>🔢 ทะเบียน</strong>
+                                    <span>${req.carPlate}</span>
+                                </div>
+                                <div class="status-card-detail">
+                                    <strong>📤 ส่งคำขอเมื่อ</strong>
+                                    <span>${submittedDate}</span>
+                                </div>
+                            </div>
+                            <div class="status-card-purpose">
+                                <strong>🎯 วัตถุประสงค์</strong>
+                                <p>${req.purpose}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error searching status:', error);
+                resultsContainer.innerHTML = `
+                    <div class="status-empty">
+                        <div class="status-empty-icon">⚠️</div>
+                        <div class="status-empty-text">เกิดข้อผิดพลาดในการค้นหา</div>
+                    </div>
+                `;
+            }
+        }
+
+        function loadAdminData() {
+            unsubscribe = db.collection('carRequests')
+                .orderBy('submittedAt', 'desc')
+                .onSnapshot((snapshot) => {
+                    const requests = [];
+                    snapshot.forEach((doc) => {
+                        requests.push({ id: doc.id, ...doc.data() });
+                    });
+                    updateAdminDashboard(requests);
+                }, (error) => {
+                    console.error('Error loading requests:', error);
+                    document.getElementById('requestsList').innerHTML = 
+                        '<div class="empty-state">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+                });
+        }
+
+        function updateAdminDashboard(requests) {
+            const total = requests.length;
+            const pending = requests.filter(r => r.status === 'Pending').length;
+            const approved = requests.filter(r => r.status === 'Approved').length;
+            const rejected = requests.filter(r => r.status === 'Rejected').length;
+
+            document.getElementById('totalRequests').textContent = total;
+            document.getElementById('pendingRequests').textContent = pending;
+            document.getElementById('approvedRequests').textContent = approved;
+            document.getElementById('rejectedRequests').textContent = rejected;
+            document.getElementById('notificationCount').textContent = pending;
+
+            renderRequestsList(requests);
+        }
+
+        function renderRequestsList(requests) {
+            const container = document.getElementById('requestsList');
+            
+            if (requests.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>ยังไม่มีคำขออนุญาตใช้รถ</p></div>';
+                return;
+            }
+
+            container.innerHTML = requests.map(request => {
+                const submittedDate = request.submittedAt ? 
+                    request.submittedAt.toDate().toLocaleString('th-TH') : 'ไม่ทราบเวลา';
+                
+                return `
+                    <div class="request-item">
+                        <div class="request-header">
+                            <div class="request-name">${request.firstName} ${request.lastName}</div>
+                            <span class="request-status status-${request.status.toLowerCase()}">
+                                ${request.status === 'Pending' ? 'รอการอนุมัติ' : 
+                                  request.status === 'Approved' ? 'อนุมัติแล้ว' : 'ปฏิเสธ'}
+                            </span>
+                        </div>
+                        
+                        <div class="request-details">
+                            <div class="detail-item"><strong>แผนก:</strong> ${request.department}</div>
+                            <div class="detail-item"><strong>ตำแหน่ง:</strong> ${request.position}</div>
+                            <div class="detail-item"><strong>วันที่:</strong> ${request.date}</div>
+                            <div class="detail-item"><strong>เวลา:</strong> ${request.timeFrom} - ${request.timeTo}</div>
+                            <div class="detail-item"><strong>ชนิดรถ:</strong> ${request.carType}</div>
+                            <div class="detail-item"><strong>ทะเบียน:</strong> ${request.carPlate}</div>
+                            <div class="detail-item"><strong>ไมล์ก่อนออกจากบริษัท:</strong> ${request.milesBefore} km</div>
+                            <div class="detail-item" style="grid-column: 1 / -1;">
+                                <strong>วัตถุประสงค์:</strong> ${request.purpose}
+                            </div>
+                            <div class="detail-item" style="grid-column: 1 / -1; color: #999; font-size: 12px;">
+                                ส่งเมื่อ: ${submittedDate}
+                            </div>
+                        </div>
+                        
+                        ${request.status === 'Pending' ? `
+                            <div class="request-actions">
+                                <button class="approve-btn" onclick="approveRequest('${request.id}')">
+                                    ✓ อนุมัติ
+                                </button>
+                                <button class="reject-btn" onclick="rejectRequest('${request.id}')">
+                                    ✗ ปฏิเสธ
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function approveRequest(id) {
+            try {
+                await db.collection('carRequests').doc(id).update({
+                    status: 'Approved',
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                console.error('Error approving request:', error);
+                alert('เกิดข้อผิดพลาดในการอนุมัติ');
+            }
+        }
+
+        async function rejectRequest(id) {
+            try {
+                await db.collection('carRequests').doc(id).update({
+                    status: 'Rejected',
+                    rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                alert('เกิดข้อผิดพลาดในการปฏิเสธ');
+            }
+        }
+
+        function resetUserForm() {
+            document.getElementById('carRequestForm').reset();
+            document.getElementById('userPage').classList.remove('slide-active');
+            document.getElementById('date').setAttribute('value', today);
+        }
+
+        function logout() {
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            if (unsubscribe) unsubscribe();
+            if (dashboardUnsubscribe) dashboardUnsubscribe();
+            if (historyUnsubscribe) historyUnsubscribe();
+            destroyCharts();
+            showUserPage();
+        }
+
+        function loadHistoryData() {
+            historyUnsubscribe = db.collection('carRequests')
+                .orderBy('submittedAt', 'desc')
+                .onSnapshot((snapshot) => {
+                    allHistoryRequests = [];
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        if (data.submittedAt) {
+                            allHistoryRequests.push({ 
+                                id: doc.id, 
+                                ...data,
+                                submittedDate: data.submittedAt.toDate(),
+                                approvedDate: data.approvedAt ? data.approvedAt.toDate() : null,
+                                rejectedDate: data.rejectedAt ? data.rejectedAt.toDate() : null
+                            });
+                        }
+                    });
+                    filterHistory();
+                });
+        }
+
+        function filterHistory() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const statusValue = document.getElementById('statusFilter')?.value || 'all';
+            const sortValue = document.getElementById('sortFilter')?.value || 'newest';
+
+            let filtered = allHistoryRequests.filter(req => {
+                const matchesSearch = 
+                    req.firstName.toLowerCase().includes(searchTerm) ||
+                    req.lastName.toLowerCase().includes(searchTerm) ||
+                    req.department.toLowerCase().includes(searchTerm) ||
+                    req.position.toLowerCase().includes(searchTerm) ||
+                    req.carType.toLowerCase().includes(searchTerm) ||
+                    req.carPlate.toLowerCase().includes(searchTerm) ||
+                    req.purpose.toLowerCase().includes(searchTerm);
+
+                const matchesStatus = statusValue === 'all' || req.status === statusValue;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            if (sortValue === 'oldest') {
+                filtered.sort((a, b) => a.submittedDate - b.submittedDate);
+            } else {
+                filtered.sort((a, b) => b.submittedDate - a.submittedDate);
+            }
+
+            document.getElementById('historyTotal').textContent = allHistoryRequests.length;
+            document.getElementById('historyFiltered').textContent = filtered.length;
+
+            renderHistoryTimeline(filtered);
+        }
+
+        function renderHistoryTimeline(requests) {
+            const container = document.getElementById('historyTimeline');
+
+            if (requests.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <div class="no-results-text">ไม่พบรายการที่ค้นหา</div>
+                        <div class="no-results-hint">ลองเปลี่ยนคำค้นหาหรือตัวกรอง</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = requests.map(req => {
+                const submittedTime = req.submittedDate.toLocaleString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                let actionTime = '';
+                let actionIcon = '';
+                if (req.status === 'Approved' && req.approvedDate) {
+                    actionTime = req.approvedDate.toLocaleString('th-TH', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    actionIcon = '✅';
+                } else if (req.status === 'Rejected' && req.rejectedDate) {
+                    actionTime = req.rejectedDate.toLocaleString('th-TH', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    actionIcon = '❌';
+                } else {
+                    actionTime = 'รออนุมัติ';
+                    actionIcon = '⏳';
+                }
+
+                const statusClass = req.status.toLowerCase();
+                const statusText = req.status === 'Pending' ? 'รอการอนุมัติ' : 
+                                  req.status === 'Approved' ? 'อนุมัติแล้ว' : 'ปฏิเสธ';
+
+                return `
+                    <div class="timeline-item status-${statusClass}">
+                        <div class="timeline-header">
+                            <div class="timeline-title">
+                                <div class="timeline-name">${req.firstName} ${req.lastName}</div>
+                                <div class="timeline-dept">${req.department} - ${req.position}</div>
+                            </div>
+                            <span class="timeline-status-badge status-${statusClass}">
+                                ${statusText}
+                            </span>
+                        </div>
+
+                        <div class="timeline-info-grid">
+                            <div class="timeline-info-item">
+                                <strong>📅 วันที่ใช้รถ</strong>
+                                ${req.date}
+                            </div>
+                            <div class="timeline-info-item">
+                                <strong>🕐 ช่วงเวลา</strong>
+                                ${req.timeFrom} - ${req.timeTo}
+                            </div>
+                            <div class="timeline-info-item">
+                                <strong>🚗 ชนิดรถ</strong>
+                                ${req.carType}
+                            </div>
+                            <div class="timeline-info-item">
+                                <strong>🔢 ทะเบียน</strong>
+                                ${req.carPlate}
+                            </div>
+                            <div class="timeline-info-item">
+                                <strong>📊 ไมล์ก่อนออก</strong>
+                                ${req.milesBefore} km
+                            </div>
+                        </div>
+
+                        <div class="timeline-purpose">
+                            <strong>🎯 วัตถุประสงค์</strong>
+                            <p>${req.purpose}</p>
+                        </div>
+
+                        <div class="timeline-timestamps">
+                            <div class="timestamp-item">
+                                <span class="timestamp-icon">📤</span>
+                                <span class="timestamp-label">ส่งคำขอ:</span>
+                                <span>${submittedTime}</span>
+                            </div>
+                            <div class="timestamp-item">
+                                <span class="timestamp-icon">${actionIcon}</span>
+                                <span class="timestamp-label">${req.status === 'Pending' ? 'สถานะ:' : req.status === 'Approved' ? 'อนุมัติเมื่อ:' : 'ปฏิเสธเมื่อ:'}</span>
+                                <span>${actionTime}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadDashboardData() {
+            dashboardUnsubscribe = db.collection('carRequests')
+                .orderBy('submittedAt', 'desc')
+                .onSnapshot((snapshot) => {
+                    allRequests = [];
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        if (data.submittedAt) {
+                            allRequests.push({ 
+                                id: doc.id, 
+                                ...data,
+                                submittedDate: data.submittedAt.toDate()
+                            });
+                        }
+                    });
+                    filterData(currentFilter);
+                });
+        }
+
+        function filterData(days) {
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+            
+            const filtered = allRequests.filter(req => 
+                req.submittedDate >= cutoffDate
+            );
+
+            updateDashboardStats(filtered);
+            updateCharts(filtered);
+        }
+
+        function updateDashboardStats(requests) {
+            const total = requests.length;
+            const approved = requests.filter(r => r.status === 'Approved').length;
+            const pending = requests.filter(r => r.status === 'Pending').length;
+            const rejected = requests.filter(r => r.status === 'Rejected').length;
+
+            animateNumber('dashTotalRequests', total);
+            animateNumber('dashApproved', approved);
+            animateNumber('dashPending', pending);
+            animateNumber('dashRejected', rejected);
+        }
+
+        function animateNumber(elementId, target) {
+            const element = document.getElementById(elementId);
+            const duration = 1000;
+            const start = parseInt(element.textContent) || 0;
+            const increment = (target - start) / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= target) || (increment < 0 && current <= target)) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 16);
+        }
+
+        function updateCharts(requests) {
+            updateStatusChart(requests);
+            updateTrendChart(requests);
+            updateDepartmentChart(requests);
+            updateCarTypeChart(requests);
+        }
+
+        function destroyCharts() {
+            Object.values(charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            charts = {
+                status: null,
+                trend: null,
+                department: null,
+                carType: null
+            };
+        }
+
+        function updateStatusChart(requests) {
+            const approved = requests.filter(r => r.status === 'Approved').length;
+            const pending = requests.filter(r => r.status === 'Pending').length;
+            const rejected = requests.filter(r => r.status === 'Rejected').length;
+
+            if (charts.status) charts.status.destroy();
+
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            charts.status = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['อนุมัติแล้ว', 'รอการอนุมัติ', 'ปฏิเสธ'],
+                    datasets: [{
+                        data: [approved, pending, rejected],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: { size: 13, family: "'Noto Sans Thai', sans-serif" }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTrendChart(requests) {
+            const days = currentFilter;
+            const labels = [];
+            const data = [];
+
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                const count = requests.filter(r => {
+                    const reqDate = r.submittedDate.toISOString().split('T')[0];
+                    return reqDate === dateStr;
+                }).length;
+
+                labels.push(date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }));
+                data.push(count);
+            }
+
+            if (charts.trend) charts.trend.destroy();
+
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            charts.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'จำนวนคำขอ',
+                        data: data,
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDepartmentChart(requests) {
+            const deptCount = {};
+            requests.forEach(r => {
+                deptCount[r.department] = (deptCount[r.department] || 0) + 1;
+            });
+
+            const sorted = Object.entries(deptCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            if (charts.department) charts.department.destroy();
+
+            const ctx = document.getElementById('departmentChart').getContext('2d');
+            charts.department = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(s => s[0]),
+                    datasets: [{
+                        label: 'จำนวนคำขอ',
+                        data: sorted.map(s => s[1]),
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCarTypeChart(requests) {
+            const carCount = {};
+            requests.forEach(r => {
+                carCount[r.carType] = (carCount[r.carType] || 0) + 1;
+            });
+
+            const sorted = Object.entries(carCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            if (charts.carType) charts.carType.destroy();
+
+            const ctx = document.getElementById('carTypeChart').getContext('2d');
+            charts.carType = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(s => s[0]),
+                    datasets: [{
+                        label: 'จำนวนครั้ง',
+                        data: sorted.map(s => s[1]),
+                        backgroundColor: 'rgba(118, 75, 162, 0.8)',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
